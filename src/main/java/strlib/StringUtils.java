@@ -1,5 +1,7 @@
 package strlib;
 
+
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,5 +57,71 @@ public final class StringUtils {
             }
         }
         return  true;
+    }
+
+
+    public static String join(String delimiter, Iterable<String> parts) {
+        Args.notNull(delimiter, "delimiter");
+        Args.notNull(parts, "parts");
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (String part : parts) {
+            Args.notNull(part, "элемент parts");
+            if (!first) {
+                sb.append(delimiter);
+            }
+            sb.append(part);
+            first = false;
+        }
+        return sb.toString();
+    }
+
+    public static String join(String delimiter, String... parts) {
+        Args.notNull(parts, "parts");
+        return join(delimiter, Arrays.asList(parts));
+    }
+
+
+    public static String replace(String s, String target, String replacement) {
+        char[] a = checkReplaceArgs(s, target, replacement);
+        char[] t = target.toCharArray();
+        StringBuilder sb = new StringBuilder(a.length);
+        int pos = 0;
+        int idx;
+        while ((idx = find(a, t, pos)) >= 0) {
+            sb.append(a, pos, idx - pos).append(replacement);
+            pos = idx + t.length;
+        }
+        sb.append(a, pos, a.length - pos);
+        return sb.toString();
+    }
+
+    public static String replaceFirst(String s, String target, String replacement) {
+        char[] a = checkReplaceArgs(s, target, replacement);
+        char[] t = target.toCharArray();
+        int idx = find(a, t, 0);
+        if (idx < 0) {
+            return s;
+        }
+        StringBuilder sb = new StringBuilder(a.length);
+        sb.append(a, 0, idx).append(replacement).append(a, idx + t.length, a.length - idx - t.length);
+        return sb.toString();
+    }
+
+    private static char[] checkReplaceArgs(String s, String target, String replacement) {
+        Args.notNull(s, "s");
+        Args.notNull(target, "target");
+        Args.notNull(replacement, "replacement");
+        Args.nonEmpty(target, "target");
+        return s.toCharArray();
+    }
+
+    private static int find(char[] text, char[] pattern, int from) {
+        for (int i = from; i <= text.length - pattern.length; i++) {
+            if (matchesAt(text, pattern, i)) {
+                return i;
+            }
+        }
+        return -1;
     }
  }
