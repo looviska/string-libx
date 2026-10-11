@@ -11,9 +11,31 @@ public final class StringUtils {
         throw new AssertionError("Утилитный класс не предназначен для создания экземпляров");
     }
 
+
+    /**
+     * Делит строку по одному символу-разделителю.
+     *
+     * @param s         исходная строка
+     * @param separator символ-разделитель
+     * @param mode      сохранять ли пустые части
+     * @return новый изменяемый список частей
+     * @throws InvalidArgumentException если s или mode равны null
+     */
+
     public static List<String> split(String s, char separator, SplitMode mode) {
         return splitChars(s, new char[]{separator}, mode);
     }
+
+    /**
+     * Делит строку по подстроке-разделителю. Совпадения ищутся слева направо
+     * и не перекрываются: "aaa" по "aa" даёт ["", "a"].
+     *
+     * @param s         исходная строка
+     * @param separator разделитель (не пустой)
+     * @param mode      сохранять ли пустые части
+     * @return новый изменяемый список частей
+     * @throws InvalidArgumentException при null или пустом разделителе
+     */
 
     public static List<String> split(String s, String separator, SplitMode mode) {
         Args.notNull(separator, "separator");
@@ -40,26 +62,37 @@ public final class StringUtils {
         addPart(parts, a, start, a.length, mode);
         return parts;
     }
-    private static void  addPart(List<String> parts, char[] a, int from, int to, SplitMode mode) {
+
+    private static void addPart(List<String> parts, char[] a, int from, int to, SplitMode mode) {
         if (from == to && !mode.keepsEmpty()) {
             return;
         }
         parts.add(new String(a, from, to - from));
     }
 
+    /**
+     * Совпадает ли pattern с text, начиная с позиции pos.
+     */
     private static boolean matchesAt(char[] text, char[] pattern, int pos) {
         if (pos < 0 || pos + pattern.length > text.length) {
             return false;
         }
-        for (int k = 0; k < pattern.length; k ++) {
+        for (int k = 0; k < pattern.length; k++) {
             if (text[pos + k] != pattern[k]) {
-                return  false;
+                return false;
             }
         }
-        return  true;
+        return true;
     }
 
-
+    /**
+     * Склеивает части через разделитель.
+     *
+     * @param delimiter разделитель (может быть пустым)
+     * @param parts     части
+     * @return склеенная строка; для пустой коллекции — пустая строка
+     * @throws InvalidArgumentException если разделитель, коллекция или любая часть равны null
+     */
     public static String join(String delimiter, Iterable<String> parts) {
         Args.notNull(delimiter, "delimiter");
         Args.notNull(parts, "parts");
@@ -76,12 +109,28 @@ public final class StringUtils {
         return sb.toString();
     }
 
+    /**
+     * Вариант join с переменным числом аргументов.
+     *
+     * @param delimiter разделитель
+     * @param parts     части
+     * @return склеенная строка
+     * @throws InvalidArgumentException при null
+     */
     public static String join(String delimiter, String... parts) {
         Args.notNull(parts, "parts");
         return join(delimiter, Arrays.asList(parts));
     }
 
-
+    /**
+     * Заменяет все непересекающиеся вхождения target (поиск слева направо).
+     *
+     * @param s           исходная строка
+     * @param target      что искать (не пустое)
+     * @param replacement чем заменять (может быть пустым — это удаление)
+     * @return новая строка; если вхождений нет — равная исходной
+     * @throws InvalidArgumentException при null или пустом target
+     */
     public static String replace(String s, String target, String replacement) {
         char[] a = checkReplaceArgs(s, target, replacement);
         char[] t = target.toCharArray();
@@ -96,6 +145,15 @@ public final class StringUtils {
         return sb.toString();
     }
 
+    /**
+     * Заменяет только первое вхождение target.
+     *
+     * @param s           исходная строка
+     * @param target      что искать (не пустое)
+     * @param replacement чем заменять
+     * @return новая строка; если вхождений нет — исходная
+     * @throws InvalidArgumentException при null или пустом target
+     */
     public static String replaceFirst(String s, String target, String replacement) {
         char[] a = checkReplaceArgs(s, target, replacement);
         char[] t = target.toCharArray();
@@ -116,6 +174,9 @@ public final class StringUtils {
         return s.toCharArray();
     }
 
+    /**
+     * Индекс первого совпадения pattern в text, начиная с from; -1, если нет.
+     */
     private static int find(char[] text, char[] pattern, int from) {
         for (int i = from; i <= text.length - pattern.length; i++) {
             if (matchesAt(text, pattern, i)) {
@@ -124,4 +185,4 @@ public final class StringUtils {
         }
         return -1;
     }
- }
+}
