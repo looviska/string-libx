@@ -270,4 +270,137 @@ public final class StringUtils {
         }
         return new String(a, lo, hi - lo);
     }
+    // ------------------------------------------------------- equalsIgnoreCase
+
+    /**
+     * Сравнение без учёта регистра, не зависящее от локали.
+     * Идёт по кодовым точкам, поэтому символы вне BMP (эмодзи) не ломаются.
+     * Турецкие İ и ı считаются равными i и I. Многосимвольные отображения
+     * (например, ß и SS) не поддерживаются.
+     *
+     * @param a первая строка
+     * @param b вторая строка
+     * @return true, если строки совпадают с точностью до регистра
+     * @throws InvalidArgumentException при null
+     */
+    public static boolean equalsIgnoreCase(String a, String b) {
+        Args.notNull(a, "a");
+        Args.notNull(b, "b");
+        char[] x = a.toCharArray();
+        char[] y = b.toCharArray();
+        int i = 0;
+        int j = 0;
+        while (i < x.length && j < y.length) {
+            int cx = Character.codePointAt(x, i);
+            int cy = Character.codePointAt(y, j);
+            if (!sameIgnoringCase(cx, cy)) {
+                return false;
+            }
+            i += Character.charCount(cx);
+            j += Character.charCount(cy);
+        }
+        return i == x.length && j == y.length;
+    }
+
+    private static boolean sameIgnoringCase(int a, int b) {
+        if (a == b) {
+            return true;
+        }
+        int ua = Character.toUpperCase(a);
+        int ub = Character.toUpperCase(b);
+        if (ua == ub) {
+            return true;
+        }
+        return Character.toLowerCase(ua) == Character.toLowerCase(ub);
+    }
+
+    // ---------------------------------------------------------- repeat / pad
+
+    /**
+     * Повторяет строку count раз.
+     *
+     * @param s     строка
+     * @param count число повторов (0 даёт пустую строку)
+     * @return результат повторения
+     * @throws InvalidArgumentException при null, отрицательном count
+     *                                  или слишком длинном результате
+     */
+    public static String repeat(String s, int count) {
+        Args.notNull(s, "s");
+        Args.nonNegative(count, "count");
+        long total = (long) s.length() * count;
+        if (total > Integer.MAX_VALUE - 8) {
+            throw new InvalidArgumentException("Результат слишком длинный: " + total + " символов");
+        }
+        StringBuilder sb = new StringBuilder((int) total);
+        for (int i = 0; i < count; i++) {
+            sb.append(s);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Дополняет строку слева до заданной длины.
+     *
+     * @param s      строка
+     * @param length целевая длина; если она не больше текущей, строка не меняется
+     * @param pad    символ-заполнитель
+     * @return дополненная строка
+     * @throws InvalidArgumentException при null или отрицательной длине
+     */
+    public static String padLeft(String s, int length, char pad) {
+        return pad(s, length, pad, true);
+    }
+
+    /**
+     * Дополняет строку справа до заданной длины.
+     *
+     * @param s      строка
+     * @param length целевая длина; если она не больше текущей, строка не меняется
+     * @param pad    символ-заполнитель
+     * @return дополненная строка
+     * @throws InvalidArgumentException при null или отрицательной длине
+     */
+    public static String padRight(String s, int length, char pad) {
+        return pad(s, length, pad, false);
+    }
+
+    private static String pad(String s, int length, char pad, boolean left) {
+        Args.notNull(s, "s");
+        Args.nonNegative(length, "length");
+        int missing = length - s.length();
+        if (missing <= 0) {
+            return s;
+        }
+        StringBuilder sb = new StringBuilder(length);
+        if (!left) {
+            sb.append(s);
+        }
+        for (int i = 0; i < missing; i++) {
+            sb.append(pad);
+        }
+        if (left) {
+            sb.append(s);
+        }
+        return sb.toString();
+    }
+
+    // --------------------------------------------------------------- reverse
+
+    /**
+     * Разворачивает строку.
+     *
+     * @param s строка
+     * @return развёрнутая строка
+     * @throws InvalidArgumentException если s равна null
+     */
+    public static String reverse(String s) {
+        Args.notNull(s, "s");
+        char[] a = s.toCharArray();
+        StringBuilder sb = new StringBuilder(a.length);
+        for (int i = a.length - 1; i >= 0; i--) {
+            sb.append(a[i]);
+        }
+        return sb.toString();
+    }
 }

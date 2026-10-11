@@ -1,5 +1,9 @@
 package strlib;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
@@ -141,5 +145,61 @@ class StringUtilsTest {
         assertEquals("", StringUtils.trim(""));
         assertEquals("x", StringUtils.trim("x"));
         assertThrows(InvalidArgumentException.class, () -> StringUtils.trim(null));
+    }
+
+    @Test
+    void equalsIgnoreCaseBasics() {
+        assertTrue(StringUtils.equalsIgnoreCase("MiXeD", "mixed"));
+        assertTrue(StringUtils.equalsIgnoreCase("", ""));
+        assertFalse(StringUtils.equalsIgnoreCase("abc", "abcd"));
+        assertFalse(StringUtils.equalsIgnoreCase("abc", "abd"));
+        assertTrue(StringUtils.equalsIgnoreCase("\u041f\u0440\u0438\u0432\u0435\u0442", "\u043f\u0420\u0418\u0412\u0415\u0422"));
+        assertThrows(InvalidArgumentException.class, () -> StringUtils.equalsIgnoreCase(null, "a"));
+    }
+
+    @Test
+    void repeatBasics() {
+        assertEquals("ababab", StringUtils.repeat("ab", 3));
+        assertEquals("", StringUtils.repeat("ab", 0));
+        assertEquals("", StringUtils.repeat("", 1000));
+    }
+
+    @Test
+    void repeatInvalidThrows() {
+        assertThrows(InvalidArgumentException.class, () -> StringUtils.repeat("ab", -1));
+        assertThrows(InvalidArgumentException.class, () -> StringUtils.repeat(null, 2));
+        assertThrows(InvalidArgumentException.class, () -> StringUtils.repeat("abc", Integer.MAX_VALUE));
+    }
+
+    @Test
+    void padding() {
+        assertEquals("00042", StringUtils.padLeft("42", 5, '0'));
+        assertEquals("42...", StringUtils.padRight("42", 5, '.'));
+    }
+
+    @Test
+    void paddingBoundaries() {
+        assertEquals("hello", StringUtils.padLeft("hello", 5, '*'));
+        assertEquals("hello", StringUtils.padRight("hello", 2, '*'));
+        assertEquals("**", StringUtils.padRight("", 2, '*'));
+        assertThrows(InvalidArgumentException.class, () -> StringUtils.padLeft("a", -1, '*'));
+        assertThrows(InvalidArgumentException.class, () -> StringUtils.padRight(null, 3, '*'));
+    }
+
+    @Test
+    void reverseBasics() {
+        assertEquals("olleh", StringUtils.reverse("hello"));
+        assertEquals("", StringUtils.reverse(""));
+        assertEquals("racecar", StringUtils.reverse("racecar"));
+        assertThrows(InvalidArgumentException.class, () -> StringUtils.reverse(null));
+    }
+
+    @Test
+    void utilityClassConstructorIsPrivate() throws Exception {
+        Constructor<StringUtils> ctor = StringUtils.class.getDeclaredConstructor();
+        assertTrue(Modifier.isPrivate(ctor.getModifiers()));
+        ctor.setAccessible(true);
+        InvocationTargetException e = assertThrows(InvocationTargetException.class, ctor::newInstance);
+        assertTrue(e.getCause() instanceof AssertionError);
     }
 }
