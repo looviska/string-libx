@@ -185,4 +185,89 @@ public final class StringUtils {
         }
         return -1;
     }
+    /**
+     * Индекс первого вхождения подстроки.
+     *
+     * @param s      где искать
+     * @param target что искать; пустая подстрока найдена в позиции 0
+     * @return индекс или -1
+     * @throws InvalidArgumentException при null
+     */
+    public static int indexOf(String s, String target) {
+        Args.notNull(s, "s");
+        Args.notNull(target, "target");
+        return find(s.toCharArray(), target.toCharArray(), 0);
+    }
+
+    /**
+     * Индекс последнего вхождения подстроки.
+     *
+     * @param s      где искать
+     * @param target что искать; пустая подстрока найдена в позиции s.length()
+     * @return индекс или -1
+     * @throws InvalidArgumentException при null
+     */
+    public static int lastIndexOf(String s, String target) {
+        Args.notNull(s, "s");
+        Args.notNull(target, "target");
+        char[] a = s.toCharArray();
+        char[] t = target.toCharArray();
+        for (int i = a.length - t.length; i >= 0; i--) {
+            if (matchesAt(a, t, i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Проверяет, начинается ли строка с префикса.
+     *
+     * @param s      строка
+     * @param prefix префикс (пустой всегда подходит)
+     * @return true, если s начинается с prefix
+     * @throws InvalidArgumentException при null
+     */
+    public static boolean startsWith(String s, String prefix) {
+        Args.notNull(s, "s");
+        Args.notNull(prefix, "prefix");
+        return matchesAt(s.toCharArray(), prefix.toCharArray(), 0);
+    }
+
+    /**
+     * Проверяет, заканчивается ли строка суффиксом.
+     *
+     * @param s      строка
+     * @param suffix суффикс (пустой всегда подходит)
+     * @return true, если s заканчивается на suffix
+     * @throws InvalidArgumentException при null
+     */
+    public static boolean endsWith(String s, String suffix) {
+        Args.notNull(s, "s");
+        Args.notNull(suffix, "suffix");
+        char[] a = s.toCharArray();
+        char[] p = suffix.toCharArray();
+        return matchesAt(a, p, a.length - p.length);
+    }
+
+    /**
+     * Удаляет пробельные символы с обоих концов строки.
+     *
+     * @param s строка
+     * @return строка без крайних пробелов
+     * @throws InvalidArgumentException если s равна null
+     */
+    public static String trim(String s) {
+        Args.notNull(s, "s");
+        char[] a = s.toCharArray();
+        int lo = 0;
+        int hi = a.length;
+        while (lo < hi && Character.isWhitespace(a[lo])) {
+            lo++;
+        }
+        while (hi > lo && Character.isWhitespace(a[hi - 1])) {
+            hi--;
+        }
+        return new String(a, lo, hi - lo);
+    }
 }

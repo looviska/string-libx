@@ -98,4 +98,48 @@ class StringUtilsTest {
         assertEquals("Xbc", StringUtils.replaceFirst("abc", "a", "X"));
         assertEquals("abX", StringUtils.replaceFirst("abc", "c", "X"));
     }
+    // ---------- indexOf / lastIndexOf / startsWith / endsWith / trim
+
+    @Test
+    void indexOfAndLastIndexOf() {
+        assertEquals(4, StringUtils.indexOf("path/to/file", "/"));
+        assertEquals(7, StringUtils.lastIndexOf("path/to/file", "/"));
+        assertEquals(-1, StringUtils.indexOf("hello", "z"));
+        assertEquals(-1, StringUtils.lastIndexOf("hello", "z"));
+        assertEquals(-1, StringUtils.indexOf("ab", "abc"));
+    }
+
+    @Test
+    void searchWithEmptyTarget() {
+        assertEquals(0, StringUtils.indexOf("hello", ""));
+        assertEquals(5, StringUtils.lastIndexOf("hello", ""));
+        assertEquals(0, StringUtils.indexOf("", ""));
+    }
+
+    @Test
+    void startsAndEndsWith() {
+        assertTrue(StringUtils.startsWith("Hello", "Hel"));
+        assertFalse(StringUtils.startsWith("Hi", "Hello"));
+        assertTrue(StringUtils.startsWith("abc", ""));
+        assertTrue(StringUtils.endsWith("file.txt", ".txt"));
+        assertFalse(StringUtils.endsWith("x", "long"));
+        assertTrue(StringUtils.endsWith("abc", ""));
+    }
+
+    @Test
+    void searchNullsThrow() {
+        assertThrows(InvalidArgumentException.class, () -> StringUtils.indexOf(null, "a"));
+        assertThrows(InvalidArgumentException.class, () -> StringUtils.lastIndexOf("a", null));
+        assertThrows(InvalidArgumentException.class, () -> StringUtils.startsWith(null, "a"));
+        assertThrows(InvalidArgumentException.class, () -> StringUtils.endsWith("a", null));
+    }
+
+    @Test
+    void trimRemovesEdgeWhitespace() {
+        assertEquals("a b", StringUtils.trim("  \t a b \n "));
+        assertEquals("", StringUtils.trim("   "));
+        assertEquals("", StringUtils.trim(""));
+        assertEquals("x", StringUtils.trim("x"));
+        assertThrows(InvalidArgumentException.class, () -> StringUtils.trim(null));
+    }
 }
