@@ -385,16 +385,43 @@ public final class StringUtils {
         return sb.toString();
     }
 
-    // --------------------------------------------------------------- reverse
-
     /**
-     * Разворачивает строку.
+     * Разворачивает строку, сохраняя суррогатные пары (эмодзи и другие символы вне BMP).
+     * Идём с конца: если встретили младший суррогат, а перед ним старший, пара
+     * переносится целиком и в прежнем порядке. Одиночные суррогаты обрабатываются
+     * как обычные символы. Графемные кластеры не учитываются.
      *
      * @param s строка
      * @return развёрнутая строка
      * @throws InvalidArgumentException если s равна null
      */
     public static String reverse(String s) {
+        Args.notNull(s, "s");
+        char[] a = s.toCharArray();
+        StringBuilder sb = new StringBuilder(a.length);
+        int i = a.length - 1;
+        while (i >= 0) {
+            char c = a[i];
+            if (Character.isLowSurrogate(c) && i > 0 && Character.isHighSurrogate(a[i - 1])) {
+                sb.append(a[i - 1]).append(c);
+                i -= 2;
+            } else {
+                sb.append(c);
+                i--;
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Наивный разворот по значениям char. Показывает ловушку суррогатных пар:
+     * на строках с эмодзи разрывает пары. В прикладном коде используйте reverse.
+     *
+     * @param s строка
+     * @return строка, развёрнутая посимвольно (возможно, с битыми суррогатами)
+     * @throws InvalidArgumentException если s равна null
+     */
+    public static String reverseByChars(String s) {
         Args.notNull(s, "s");
         char[] a = s.toCharArray();
         StringBuilder sb = new StringBuilder(a.length);
