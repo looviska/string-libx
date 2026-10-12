@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.Locale;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +15,7 @@ class TrapsTest {
     private static final String SMILE = "\uD83D\uDE00";
     private static final String GRIN = "\uD83D\uDE01";
 
-    // ---------- Ловушка 1: суррогатные пары
+    //ловушка 1: суррогатные пары
 
     @Test
     void reverseKeepsSurrogatePairs() {
@@ -41,7 +43,7 @@ class TrapsTest {
         assertEquals(original, StringUtils.reverse(StringUtils.reverse(original)));
     }
 
-    // ---------- Ловушка 2: турецкая «i»
+    //ловушка 2: турецкая i
 
     @Test
     void equalsIgnoreCaseIsLocaleIndependent() {
@@ -64,5 +66,23 @@ class TrapsTest {
         assertTrue(StringUtils.equalsIgnoreCase("\u0130stanbul", "istanbul"));
         assertTrue(StringUtils.equalsIgnoreCase("\u0131sparta", "ISPARTA"));
         assertFalse(StringUtils.equalsIgnoreCase("istanbul", "istanbuk"));
+    }
+
+    // ловушка 3: конкатенация против StringBuilder
+
+    @Test
+    void builderBeatsConcatenation() {
+        BenchmarkResult r = ConcatBenchmark.run(100_000);
+        assertEquals(100_000, r.resultLength());
+        assertTrue(r.builderNanos() < r.concatNanos(),
+                "StringBuilder должен быть быстрее: concat=" + r.concatNanos()
+                        + " нс, builder=" + r.builderNanos() + " нс");
+        assertTrue(r.ratio() > 1.0);
+    }
+
+    @Test
+    void benchmarkInvalidIterationsThrow() {
+        assertThrows(InvalidArgumentException.class, () -> ConcatBenchmark.run(0));
+        assertThrows(InvalidArgumentException.class, () -> ConcatBenchmark.run(-5));
     }
 }
